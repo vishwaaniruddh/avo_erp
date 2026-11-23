@@ -19,6 +19,8 @@ backend/.env
 .phpunit.cache/
 backend/.phpunit.cache/
 .phpunit.result.cache
+backend/storage/cache/
+backend/storage/logs/
 
 # Temporary & Scratch files
 scratch/
