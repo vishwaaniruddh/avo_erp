@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+client/node_modules/
+vendor/
+backend/vendor/
+
+# Build outputs
+dist/
+client/dist/
+
+# Environment and sensitive files
+.env
+.env.*
+!.env.example
+backend/.env
+
+# Logs and cache
+*.log
+.phpunit.cache/
+backend/.phpunit.cache/
+.phpunit.result.cache
+
+# Temporary & Scratch files
+scratch/
+tmp/
+temp/
+
+# Large binary mobile packages
+*.apk
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

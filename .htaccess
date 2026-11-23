@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Pass Authorization Header to PHP in Apache
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Route /api calls directly to backend/public/index.php
+    RewriteRule ^api(/.*)?$ backend/public/index.php [QSA,L]
+</IfModule>

@@ -1,0 +1,296 @@
+<?php
+session_start(); 
+
+include('db_connection.php');
+$con1 = OpenCon1();
+
+$strPage = $_REQUEST['Page'];
+
+?>
+
+<table width="100%" border="1" cellpadding="2" cellspacing="0" style="margin-top:5px;" class="res"  id="custtable" >
+<tr>
+<th width="10%">Complain ID</th> 
+
+<th width="5%">Name</th>
+<th width="5%">Site/Sol/ATM Id</th>
+<th width="5%">User Customer Name</th>
+<th width="5%">City</th>
+
+<th width="5%">Pincode</th>
+<th width="5%">Landmark</th>
+<th width="5%">Address</th>
+<th width="5%">AVO Branch</th>
+<th width="5%">Problem</th>
+<th width="5%">Alert Date</th>
+<th width="5%">Contact Person</th>
+<th width="5%"> Phone</th>
+<th width="5%"> Delegated To</th>
+
+<th width="5%"> Call Type</th>
+<th width="5%"> Customer Status</th>
+<th width="5%"> Last FeedBack</th>
+<th width="5%">Status</th>
+<th width="5%">Action</th>
+
+</tr>
+<?php
+   	$sql="Select * from alert where cust_id !=96 ";
+
+//======================================Search ATM ID Wise
+if(isset($_POST['atmid']) && $_POST['atmid']!='')
+{
+ $id=trim($_POST['atmid']);
+ 
+$sql.=" and ((atm_id IN (select track_id from atm where atm_id ='".$id."' and assetstatus='site') )or (atm_id IN (select amcid from Amc where atmid = '".$id."' and assetstatus='amc')))";
+
+//$sql.=" and (((atm_id IN (select track_id from atm where atm_id LIKE '%".$id."%') and assetstatus='site') or (atm_id IN (select amcid from Amc where atmid LIKE '%".$id."%' and assetstatus='amc') ))";
+
+
+}
+ //======================================Search
+if(isset($_POST['bank']) && $_POST['bank']!='')
+{
+$bank=$_REQUEST['bank'];
+$sql.=" and bank_name LIKE '%".$bank."%'";
+}
+
+//======================================Search
+if(isset($_POST['area']) && $_POST['area']!='')
+{
+$area=$_REQUEST['area'];
+$sql.=" and address LIKE '%".$area."%'";
+}
+//======================================Search
+if(isset($_POST['complaintno']) && $_POST['complaintno']!='')
+{
+$complaintno=$_REQUEST['complaintno'];
+$sql.=" and createdby LIKE '%".$complaintno."%'";
+}
+  
+// echo $sql."<br>"; 
+ ?>
+ <div align="center">Total number of Records :<b><?php echo $Num_Rows; ?></b>
+ Records Per Page :<select name="perpg" id="perpg" onchange="searchById('Listing','1','perpg');">
+
+ <?php
+ for($i=1;$i<=$Num_Rows;$i++)
+ {
+ if($i%10==0)
+ {
+ ?>
+ <option value="<?php echo $i; ?>" <?php if(isset($_POST['perpg']) && $_POST['perpg']==$i){?>  selected="selected" <?php } ?>><?php echo $i."/page"; ?></option>
+ <?php
+ }
+ }
+ 
+ ?>
+ <option value="<?php echo $Num_Rows; ?>"><?php echo "All"; ?></option>
+ </select> </div>
+
+ <?php
+########### pagins
+//echo $_POST['perpg'];
+$Per_Page =$_POST['perpg'];   // Records Per Page
+ 
+$Page = $strPage;
+if(!$strPage)
+{
+	$Page=1;
+}
+ 
+$Prev_Page = $Page-1;
+$Next_Page = $Page+1;
+
+
+$Page_Start = (($Per_Page*$Page)-$Per_Page);
+if($Num_Rows<=$Per_Page)
+{
+	$Num_Pages =1;
+}
+else if(($Num_Rows % $Per_Page)==0)
+{
+	$Num_Pages =($Num_Rows/$Per_Page) ;
+}
+else
+{
+	$Num_Pages =($Num_Rows/$Per_Page)+1;
+	$Num_Pages = (int)$Num_Pages;
+}
+
+$qr22=$sql;
+//$sql.=" order by alert_id DESC LIMIT $Page_Start , $Per_Page";
+$sql.=" order by alert_id DESC LIMIT 1";
+
+//echo $sql;// die;
+
+$table=mysqli_query($con1,$sql);
+//echo mysqli_num_rows($table);
+
+if(mysqli_num_rows($table)>0) {
+// include("config.php");
+while($row= mysqli_fetch_row($table))
+{
+ //======Fetch ATM ID =========
+ $is_qry = 0;
+	if($row[21] ==  'amc' || $row[21] ==  'AMC') {
+	    $is_qry = 1;
+	    $atmquery="select atmid, active from Amc where amcid='".$row[2]."'";
+   } elseif($row[21] == 'site') {
+       $is_qry = 1;
+	    $atmquery="select atm_id, active from atm where track_id='".$row[2]."'";
+	} 
+	
+	if($is_qry==1){
+	    $atm=mysqli_query($con1,$atmquery);
+    
+        	$atmrow=mysqli_fetch_row($atm);
+        	$atm_id=$atmrow[0];
+        	$active=$atmrow[1];
+        	$site_type ="site";
+    	 } else{ 
+    	    $atm_id=$row[2];
+	    
+	} 
+
+	
+//===============Cutsomer===========
+	$qry=mysqli_query($con1,"select cust_name from customer where cust_id='".$row[1]."'");
+	$custrow=mysqli_fetch_row($qry);
+//============Updates=========	
+	$tab=mysqli_query($con1,"select feedback,standby,feed_date from eng_feedback where alert_id='".$row[0]."' order by feed_date DESC limit 1");
+	$row1=mysqli_fetch_row($tab);
+	
+
+		?>
+<tr <?php if($row[26]=='1'){ echo "style='background:#99CC33'"; } if($row[16]=='2'){ echo "style='background:#990000'"; } if($row[31]!='2000-01-01 00:00:00' && $row[31]<=date('Y-m-d H:i:s') && $row[16]<>'Done'){ echo "style='background:red'"; } if($row[43] !=''){ echo "style='background:#FFA500'"; }?>>
+
+
+<td  valign="top"><?php echo $row[25]; ?></td>
+<td  valign="top">&nbsp;<?php echo $custrow[0]; ?></td>
+
+<td  valign="top">&nbsp;<?php echo $atm_id;  ?></td>
+
+<td  valign="top">&nbsp;<?php echo wordwrap($row[3],6,"<br />\n",TRUE); ?></td>
+<td  valign="top">&nbsp;<?php echo wordwrap($row[6],5,"<br />\n",TRUE); ?></td>
+<td  valign="top">&nbsp;<?php echo $row[8]; ?></td>
+<td  valign="top">&nbsp;<?php echo wordwrap($row[4] ,7,"<br />\n",TRUE) ;?></td>
+<td valign="top">&nbsp;<div height="100px" style="height:150px; overflow:hidden;">
+<?php echo $row[5];
+  ?></div></td>
+
+<!--<td  valign="top">&nbsp;<?php echo wordwrap($row[27],6,"<br />\n",TRUE); ?> </td>-->
+
+<!--================Branch show here==================-->
+<td ><?php 
+$branch_name=mysqli_query($con1,"select `name` from `avo_branch` where `id`='".$row[7]."'");
+$branch_name1=mysqli_fetch_row($branch_name);
+echo  $branch_name1[0] ?></td>
+
+<!---==================Problem ============-->
+<td  valign="top">&nbsp;<?php echo $row[9];  ?></td>
+
+<!---==================Alert date ============-->
+<td valign="top">&nbsp;<?php echo date('d/m/Y h:i:s a',strtotime($row[10]));?></td>
+
+<td  valign="top">&nbsp;<?php echo wordwrap($row[12],8,"<br />\n",TRUE); ?></td>
+<td  valign="top">&nbsp;<?php echo $row[13] ?></td>
+
+<!---==================Engineer ============-->
+<?php 
+$fetchengid=mysqli_query($con1,"Select e.engg_name,e.phone_no1,e.engg_id,d.status, d.call_close_status from area_engg e,alert_delegation d where e.engg_id=d.engineer and d.alert_id='".$row[0]."' order by d.id DESC");
+
+$delstus='';
+if(mysqli_num_rows($fetchengid)>0){
+    $getoldname=mysqli_fetch_row($fetchengid);
+if($getoldname[3] =='2') $delstus ="Rejected By Eng!"; 
+if($getoldname[4]=='2') $delstus = "Attended-Pending";
+ 
+ $engg_name = $getoldname[0];
+    $phone_no1 = $getoldname[1];
+    $engg_id = $getoldname[2];
+}else{
+     $engg_name = '';
+    $phone_no1 = '';
+    $engg_id = '';
+    $delstus='';
+} 
+?>
+<td  valign="top"><?php echo $engg_name."<br>".$phone_no1."<br><font color='blue'>$delstus</font>"; ?>
+<br>
+<?php if($engg_name !='') { 
+$cdate = date('d/m/Y');
+ } ?>
+</td>
+  <td  valign="top">&nbsp;<?php echo $row[17] ?></td>
+ <!-- =============Customer Status =========== -->
+  <td  valign="top">&nbsp;
+<?php 
+	
+ 	if($row[21]=='site'){ echo "Under Warranty"; }
+	else if($row[21]=='amc'){ echo "AMC"; }
+	else echo "Temp Call"; ?>
+  </td>
+<td valign="top">&nbsp;
+<div height="100px" style="height:150px; overflow:hidden;">
+
+<a href="javascript:void(0);" onclick="newwin('masteralert.php?id=<?php echo $row[0] ?>','display',700,700)" class="update">
+<?php echo date('d/m/Y h:i:s a',strtotime($row1[2]))."<br>".wordwrap($row1[0],10,"<br />\n",TRUE); ?></a>
+</div>
+
+</td>
+
+<td>
+<?php if($row[15]=='Done'){ echo "Closed By Engineer"; }
+else if($row[16]=='Done') { echo "Call Closed";} 
+else if($row[16]=='Rejected') { echo "Rejected"; }
+?>
+<br>
+</td>
+<td>
+    <?php if ($row[15]=='Done' || $row[16]=='Done') { 
+$tmb = date('Y-m-d 00:00:00', strtotime('-2 days'));
+if($row[18] > $tmb ) {  ?> 
+<input type="button" value="ReOpen" onclick="reopen_fun(<?php echo $row[0]; ?>)"/>
+
+<?php }
+
+elseif($active == 'y' || $active == 'Y') { ?>
+  <a href="javascript:confirm_generate('<?php echo $row[2]; ?>','<?php echo $atm_id; ?>','<?php echo $row[1]; ?>','<?php echo $row[21]; ?>');" class="update"> Generate Call </a></td>
+
+<?php
+} else echo "Now this site is Non-Active";
+}
+?>
+       </td>
+
+</tr>
+<?php
+  
+}
+    
+}
+?>
+</table>
+<div class="pagination" style="width:100%;"><font size="4" color="#000">
+<?php
+
+
+if($Prev_Page) 
+{
+	echo " <a href=\"JavaScript:searchById('Listing','$Prev_Page','perpg')\" style=\"text-decoration:none\"><font color=:#005252> << Back</font></a>";
+}
+
+?>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<?php
+if($Page!=$Num_Pages)
+{
+	echo " <a href=\"JavaScript:searchById('Listing','$Next_Page','perpg')\" style=\"text-decoration:none\"><font color=:#005252>Next >></font></a> ";
+}
+?>
+</div>
+</form>
+</div> 
+
+<?php  CloseCon($con1); ?>

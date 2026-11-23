@@ -1,0 +1,528 @@
+{
+    "database": "avoservice_avoserviCrm",
+    "exported_at": "2026-11-19 20:24:18",
+    "sample_limit": 100,
+    "total_tables": 65,
+    "tables": [
+        {
+            "table_name": "Brand",
+            "file_name": "Brand.sql",
+            "file_size_kb": 0.88000000000000000444089209850062616169452667236328125,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "Brand_id"
+        },
+        {
+            "table_name": "CardBenefit",
+            "file_name": "CardBenefit.sql",
+            "file_size_kb": 1.1399999999999999023003738329862244427204132080078125,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "CardBenefit_id"
+        },
+        {
+            "table_name": "CertificateBenefits",
+            "file_name": "CertificateBenefits.sql",
+            "file_size_kb": 1.1100000000000000976996261670137755572795867919921875,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "CertificateBenefits_id"
+        },
+        {
+            "table_name": "CloseLead",
+            "file_name": "CloseLead.sql",
+            "file_size_kb": 0.7399999999999999911182158029987476766109466552734375,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "CloseLead_id"
+        },
+        {
+            "table_name": "CloseRenewal",
+            "file_name": "CloseRenewal.sql",
+            "file_size_kb": 0.7600000000000000088817841970012523233890533447265625,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "closeRenewal_id"
+        },
+        {
+            "table_name": "ComplimentaryMembership",
+            "file_name": "ComplimentaryMembership.sql",
+            "file_size_kb": 0.8000000000000000444089209850062616169452667236328125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "ComMem_id"
+        },
+        {
+            "table_name": "DiwaliOffer_email",
+            "file_name": "DiwaliOffer_email.sql",
+            "file_size_kb": 0.689999999999999946709294817992486059665679931640625,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "HotelUsers",
+            "file_name": "HotelUsers.sql",
+            "file_size_kb": 1.37999999999999989341858963598497211933135986328125,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "Hotel_Creation",
+            "file_name": "Hotel_Creation.sql",
+            "file_size_kb": 1.1799999999999999378275106209912337362766265869140625,
+            "db_total_rows": 2,
+            "sample_rows": 2,
+            "sort_column": "hotel_id"
+        },
+        {
+            "table_name": "LeadDelegation",
+            "file_name": "LeadDelegation.sql",
+            "file_size_kb": 1.229999999999999982236431605997495353221893310546875,
+            "db_total_rows": 2,
+            "sample_rows": 2,
+            "sort_column": "DelegationId"
+        },
+        {
+            "table_name": "LeadUpdates",
+            "file_name": "LeadUpdates.sql",
+            "file_size_kb": 1.37999999999999989341858963598497211933135986328125,
+            "db_total_rows": 4,
+            "sample_rows": 4,
+            "sort_column": "UpdateId"
+        },
+        {
+            "table_name": "Lead_Sources",
+            "file_name": "Lead_Sources.sql",
+            "file_size_kb": 1.1799999999999999378275106209912337362766265869140625,
+            "db_total_rows": 6,
+            "sample_rows": 6,
+            "sort_column": "SourceId"
+        },
+        {
+            "table_name": "Leads_table",
+            "file_name": "Leads_table.sql",
+            "file_size_kb": 3.729999999999999982236431605997495353221893310546875,
+            "db_total_rows": 3,
+            "sample_rows": 3,
+            "sort_column": "Lead_id"
+        },
+        {
+            "table_name": "Leads_tableSuspend",
+            "file_name": "Leads_tableSuspend.sql",
+            "file_size_kb": 2.20000000000000017763568394002504646778106689453125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "Lead_id"
+        },
+        {
+            "table_name": "Level",
+            "file_name": "Level.sql",
+            "file_size_kb": 1.04000000000000003552713678800500929355621337890625,
+            "db_total_rows": 8,
+            "sample_rows": 8,
+            "sort_column": "Leval_id"
+        },
+        {
+            "table_name": "Location",
+            "file_name": "Location.sql",
+            "file_size_kb": 0.89000000000000001332267629550187848508358001708984375,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "Locations",
+            "file_name": "Locations.sql",
+            "file_size_kb": 0.85999999999999998667732370449812151491641998291015625,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "LocationId"
+        },
+        {
+            "table_name": "Members",
+            "file_name": "Members.sql",
+            "file_size_kb": 6.28000000000000024868995751603506505489349365234375,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "mem_id"
+        },
+        {
+            "table_name": "MembershipNumberSeries",
+            "file_name": "MembershipNumberSeries.sql",
+            "file_size_kb": 0.83999999999999996891375531049561686813831329345703125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "num_series_id"
+        },
+        {
+            "table_name": "MembershipPaymentMode",
+            "file_name": "MembershipPaymentMode.sql",
+            "file_size_kb": 1.060000000000000053290705182007513940334320068359375,
+            "db_total_rows": 4,
+            "sample_rows": 4,
+            "sort_column": "paymode_id"
+        },
+        {
+            "table_name": "MembershipType",
+            "file_name": "MembershipType.sql",
+            "file_size_kb": 0.7399999999999999911182158029987476766109466552734375,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "MemType_id"
+        },
+        {
+            "table_name": "ORDERS",
+            "file_name": "ORDERS.sql",
+            "file_size_kb": 0.70999999999999996447286321199499070644378662109375,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "ID"
+        },
+        {
+            "table_name": "POS_table",
+            "file_name": "POS_table.sql",
+            "file_size_kb": 1.62000000000000010658141036401502788066864013671875,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "POS_ID"
+        },
+        {
+            "table_name": "ParticipatingHotels",
+            "file_name": "ParticipatingHotels.sql",
+            "file_size_kb": 0.770000000000000017763568394002504646778106689453125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "particip_id"
+        },
+        {
+            "table_name": "PaymentReceipt",
+            "file_name": "PaymentReceipt.sql",
+            "file_size_kb": 0.85999999999999998667732370449812151491641998291015625,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "PayReceipt_id"
+        },
+        {
+            "table_name": "PrimaryMembershipFee",
+            "file_name": "PrimaryMembershipFee.sql",
+            "file_size_kb": 1.229999999999999982236431605997495353221893310546875,
+            "db_total_rows": 3,
+            "sample_rows": 3,
+            "sort_column": "MembershipFee_id"
+        },
+        {
+            "table_name": "Program",
+            "file_name": "Program.sql",
+            "file_size_kb": 0.979999999999999982236431605997495353221893310546875,
+            "db_total_rows": 2,
+            "sample_rows": 2,
+            "sort_column": "Program_ID"
+        },
+        {
+            "table_name": "RenewalBenefits",
+            "file_name": "RenewalBenefits.sql",
+            "file_size_kb": 0.8000000000000000444089209850062616169452667236328125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "RenewalBenefits_id"
+        },
+        {
+            "table_name": "SalesAssociate",
+            "file_name": "SalesAssociate.sql",
+            "file_size_kb": 1.62999999999999989341858963598497211933135986328125,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "SalesmanId"
+        },
+        {
+            "table_name": "SupplementaryMembershipFee",
+            "file_name": "SupplementaryMembershipFee.sql",
+            "file_size_kb": 0.83999999999999996891375531049561686813831329345703125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "SupFee_id"
+        },
+        {
+            "table_name": "Title",
+            "file_name": "Title.sql",
+            "file_size_kb": 0.88000000000000000444089209850062616169452667236328125,
+            "db_total_rows": 2,
+            "sample_rows": 2,
+            "sort_column": "title_id"
+        },
+        {
+            "table_name": "User",
+            "file_name": "User.sql",
+            "file_size_kb": 1.7199999999999999733546474089962430298328399658203125,
+            "db_total_rows": 4,
+            "sample_rows": 4,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "Users",
+            "file_name": "Users.sql",
+            "file_size_kb": 1.54000000000000003552713678800500929355621337890625,
+            "db_total_rows": 2,
+            "sample_rows": 2,
+            "sort_column": "UserId"
+        },
+        {
+            "table_name": "activity",
+            "file_name": "activity.sql",
+            "file_size_kb": 2.04999999999999982236431605997495353221893310546875,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "cities",
+            "file_name": "cities.sql",
+            "file_size_kb": 0.79000000000000003552713678800500929355621337890625,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "city_id"
+        },
+        {
+            "table_name": "crm_po_assets",
+            "file_name": "crm_po_assets.sql",
+            "file_size_kb": 1.2600000000000000088817841970012523233890533447265625,
+            "db_total_rows": 2,
+            "sample_rows": 2,
+            "sort_column": "assettrack_id"
+        },
+        {
+            "table_name": "crm_purchase_order",
+            "file_name": "crm_purchase_order.sql",
+            "file_size_kb": 2.45999999999999996447286321199499070644378662109375,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "cust_vertical",
+            "file_name": "cust_vertical.sql",
+            "file_size_kb": 1.229999999999999982236431605997495353221893310546875,
+            "db_total_rows": 5,
+            "sample_rows": 5,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "customer",
+            "file_name": "customer.sql",
+            "file_size_kb": 2.779999999999999804600747665972448885440826416015625,
+            "db_total_rows": 4,
+            "sample_rows": 4,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "customer_contact",
+            "file_name": "customer_contact.sql",
+            "file_size_kb": 1.8300000000000000710542735760100185871124267578125,
+            "db_total_rows": 3,
+            "sample_rows": 3,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "customer_vertical",
+            "file_name": "customer_vertical.sql",
+            "file_size_kb": 12.699999999999999289457264239899814128875732421875,
+            "db_total_rows": 83,
+            "sample_rows": 83,
+            "sort_column": "cust_id"
+        },
+        {
+            "table_name": "dispatchDetails",
+            "file_name": "dispatchDetails.sql",
+            "file_size_kb": 0.81999999999999995115018691649311222136020660400390625,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "Dispatch_ID"
+        },
+        {
+            "table_name": "enquiry",
+            "file_name": "enquiry.sql",
+            "file_size_kb": 4.2599999999999997868371792719699442386627197265625,
+            "db_total_rows": 17,
+            "sample_rows": 17,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "enquiry_remark",
+            "file_name": "enquiry_remark.sql",
+            "file_size_kb": 1.1799999999999999378275106209912337362766265869140625,
+            "db_total_rows": 5,
+            "sample_rows": 5,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "lead_exp1",
+            "file_name": "lead_exp1.sql",
+            "file_size_kb": 2.109999999999999875655021241982467472553253173828125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": null
+        },
+        {
+            "table_name": "leads_export",
+            "file_name": "leads_export.sql",
+            "file_size_kb": 2.109999999999999875655021241982467472553253173828125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "Lead_id"
+        },
+        {
+            "table_name": "leads_new",
+            "file_name": "leads_new.sql",
+            "file_size_kb": 2.0800000000000000710542735760100185871124267578125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": null
+        },
+        {
+            "table_name": "login",
+            "file_name": "login.sql",
+            "file_size_kb": 0.8000000000000000444089209850062616169452667236328125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "login_activity",
+            "file_name": "login_activity.sql",
+            "file_size_kb": 3.939999999999999946709294817992486059665679931640625,
+            "db_total_rows": 95,
+            "sample_rows": 95,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "menuAccess",
+            "file_name": "menuAccess.sql",
+            "file_size_kb": 0.67000000000000003996802888650563545525074005126953125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "pid"
+        },
+        {
+            "table_name": "otp",
+            "file_name": "otp.sql",
+            "file_size_kb": 0.86999999999999999555910790149937383830547332763671875,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": null
+        },
+        {
+            "table_name": "roles",
+            "file_name": "roles.sql",
+            "file_size_kb": 1.2199999999999999733546474089962430298328399658203125,
+            "db_total_rows": 3,
+            "sample_rows": 3,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "roll",
+            "file_name": "roll.sql",
+            "file_size_kb": 1.04000000000000003552713678800500929355621337890625,
+            "db_total_rows": 3,
+            "sample_rows": 3,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "salesteam",
+            "file_name": "salesteam.sql",
+            "file_size_kb": 17.489999999999998436805981327779591083526611328125,
+            "db_total_rows": 126,
+            "sample_rows": 100,
+            "sort_column": "exe_id"
+        },
+        {
+            "table_name": "services",
+            "file_name": "services.sql",
+            "file_size_kb": 0.7600000000000000088817841970012523233890533447265625,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "Service_id"
+        },
+        {
+            "table_name": "state",
+            "file_name": "state.sql",
+            "file_size_kb": 1.7399999999999999911182158029987476766109466552734375,
+            "db_total_rows": 36,
+            "sample_rows": 36,
+            "sort_column": "state_id"
+        },
+        {
+            "table_name": "suplimentoryMember",
+            "file_name": "suplimentoryMember.sql",
+            "file_size_kb": 1.1100000000000000976996261670137755572795867919921875,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "SupID"
+        },
+        {
+            "table_name": "type",
+            "file_name": "type.sql",
+            "file_size_kb": 0.65000000000000002220446049250313080847263336181640625,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "user_name",
+            "file_name": "user_name.sql",
+            "file_size_kb": 11.3499999999999996447286321199499070644378662109375,
+            "db_total_rows": 110,
+            "sample_rows": 100,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "user_segment",
+            "file_name": "user_segment.sql",
+            "file_size_kb": 1.5500000000000000444089209850062616169452667236328125,
+            "db_total_rows": 13,
+            "sample_rows": 13,
+            "sort_column": "id"
+        },
+        {
+            "table_name": "validity",
+            "file_name": "validity.sql",
+            "file_size_kb": 1.0100000000000000088817841970012523233890533447265625,
+            "db_total_rows": 2,
+            "sample_rows": 2,
+            "sort_column": "validity_id"
+        },
+        {
+            "table_name": "versions",
+            "file_name": "versions.sql",
+            "file_size_kb": 0.7800000000000000266453525910037569701671600341796875,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": null
+        },
+        {
+            "table_name": "voucher_Booklet",
+            "file_name": "voucher_Booklet.sql",
+            "file_size_kb": 1.12000000000000010658141036401502788066864013671875,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "v_id"
+        },
+        {
+            "table_name": "voucher_Details",
+            "file_name": "voucher_Details.sql",
+            "file_size_kb": 0.770000000000000017763568394002504646778106689453125,
+            "db_total_rows": 0,
+            "sample_rows": 0,
+            "sort_column": "voucher_Id"
+        },
+        {
+            "table_name": "voucher_Type",
+            "file_name": "voucher_Type.sql",
+            "file_size_kb": 1.1599999999999999200639422269887290894985198974609375,
+            "db_total_rows": 1,
+            "sample_rows": 1,
+            "sort_column": "V_type_id"
+        }
+    ]
+}
