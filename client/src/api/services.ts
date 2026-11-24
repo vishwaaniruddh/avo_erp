@@ -390,6 +390,14 @@ export const salesApi = {
     const res = (await api.post('/sales/rfp-clusters', data)) as unknown as ApiResponse<any>
     return res.data!
   },
+  updateClusterOutcome: async (id: number, data: { cluster_status: string; winning_si_name?: string }) => {
+    const res = (await api.put(`/sales/rfp-clusters/${id}/outcome`, data)) as unknown as ApiResponse<any>
+    return res.data!
+  },
+  deleteCluster: async (id: number) => {
+    const res = (await api.delete(`/sales/rfp-clusters/${id}`)) as unknown as ApiResponse<any>
+    return res.data!
+  },
 
   // Milestones & Audit
   getOrderMilestones: async () => {

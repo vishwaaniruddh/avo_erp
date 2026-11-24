@@ -855,12 +855,12 @@ class SalesService
 
     public function createCluster(array $data): array
     {
-        $code = 'CLUST-' . strtoupper(substr(md5(uniqid()), 0, 8));
+        $code = !empty($data['cluster_code']) ? trim($data['cluster_code']) : ('CLUST-' . strtoupper(substr(md5(uniqid()), 0, 8)));
         $stmt = $this->pdo->prepare("
             INSERT INTO si_rfp_clusters (
                 cluster_code, end_client_name, project_scope,
-                est_total_deal_value, cluster_status
-            ) VALUES (?, ?, ?, ?, ?)
+                est_total_deal_value, cluster_status, winning_si_name
+            ) VALUES (?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute([
@@ -868,7 +868,8 @@ class SalesService
             $data['end_client_name'] ?? 'Enterprise Client',
             $data['project_scope'] ?? 'Data Center Backup UPS',
             (float)($data['est_total_deal_value'] ?? 0.00),
-            $data['cluster_status'] ?? 'Active_Bidding'
+            $data['cluster_status'] ?? 'Active_Bidding',
+            $data['winning_si_name'] ?? null
         ]);
 
         $clusterId = (int)$this->pdo->lastInsertId();
@@ -880,6 +881,7 @@ class SalesService
                 ) VALUES (?, ?, ?, ?, ?)
             ");
             foreach ($data['bids'] as $bid) {
+                if (empty($bid['si_company_name'])) continue;
                 $bStmt->execute([
                     $clusterId,
                     $bid['si_company_name'] ?? 'SI Partner',
@@ -891,6 +893,42 @@ class SalesService
         }
 
         return ['id' => $clusterId, 'cluster_code' => $code];
+    }
+
+    public function updateClusterOutcome(int $clusterId, array $data): bool
+    {
+        $status = $data['cluster_status'] ?? 'Active_Bidding';
+        $winningSi = $data['winning_si_name'] ?? null;
+
+        $stmt = $this->pdo->prepare("
+            UPDATE si_rfp_clusters 
+            SET cluster_status = ?, winning_si_name = ?
+            WHERE id = ?
+        ");
+        $stmt->execute([$status, $winningSi, $clusterId]);
+
+        // If won via an SI, mark that SI's bid as L1
+        if ($status === 'Deal_Won' && !empty($winningSi)) {
+            $upWon = $this->pdo->prepare("UPDATE si_rfp_bids SET bid_status = 'L1' WHERE cluster_id = ? AND si_company_name = ?");
+            $upWon->execute([$clusterId, $winningSi]);
+
+            $upLost = $this->pdo->prepare("UPDATE si_rfp_bids SET bid_status = 'L2_Plus' WHERE cluster_id = ? AND si_company_name != ?");
+            $upLost->execute([$clusterId, $winningSi]);
+        } elseif ($status === 'Deal_Lost') {
+            $upLost = $this->pdo->prepare("UPDATE si_rfp_bids SET bid_status = 'Disqualified' WHERE cluster_id = ?");
+            $upLost->execute([$clusterId]);
+        }
+
+        return true;
+    }
+
+    public function deleteCluster(int $clusterId): bool
+    {
+        $stmtBids = $this->pdo->prepare("DELETE FROM si_rfp_bids WHERE cluster_id = ?");
+        $stmtBids->execute([$clusterId]);
+
+        $stmt = $this->pdo->prepare("DELETE FROM si_rfp_clusters WHERE id = ?");
+        return $stmt->execute([$clusterId]);
     }
 
     // =========================================================================

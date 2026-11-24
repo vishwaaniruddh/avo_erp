@@ -200,6 +200,50 @@ export function SalesPage() {
     const [isOutcomeModalOpen, setIsOutcomeModalOpen] = useState(false)
     const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false)
     const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
+    const [isClusterModalOpen, setIsClusterModalOpen] = useState(false)
+    const [isClusterOutcomeModalOpen, setIsClusterOutcomeModalOpen] = useState(false)
+    const [selectedClusterForOutcome, setSelectedClusterForOutcome] = useState<SiRfpCluster | null>(null)
+    const [newCluster, setNewCluster] = useState({
+      cluster_code: '',
+      end_client_name: '',
+      project_scope: '',
+      est_total_deal_value: 0,
+      cluster_status: 'Active_Bidding' as 'Active_Bidding' | 'Deal_Won' | 'Deal_Lost',
+      winning_si_name: '',
+      bids: [
+        { si_company_name: '', quoted_amount: 0, salesperson_name: '' },
+        { si_company_name: '', quoted_amount: 0, salesperson_name: '' },
+      ],
+    })
+    const [clusterOutcomeForm, setClusterOutcomeForm] = useState({
+      cluster_status: 'Deal_Won' as 'Active_Bidding' | 'Deal_Won' | 'Deal_Lost',
+      winning_si_name: '',
+    })
+
+    const handleOpenClusterModal = () => {
+      setNewCluster({
+        cluster_code: 'RFP-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
+        end_client_name: '',
+        project_scope: '',
+        est_total_deal_value: 0,
+        cluster_status: 'Active_Bidding',
+        winning_si_name: '',
+        bids: [
+          { si_company_name: '', quoted_amount: 0, salesperson_name: currentUser?.name || '' },
+          { si_company_name: '', quoted_amount: 0, salesperson_name: currentUser?.name || '' },
+        ],
+      })
+      setIsClusterModalOpen(true)
+    }
+
+    const handleOpenClusterOutcomeModal = (cluster: SiRfpCluster) => {
+      setSelectedClusterForOutcome(cluster)
+      setClusterOutcomeForm({
+        cluster_status: cluster.cluster_status || 'Deal_Won',
+        winning_si_name: cluster.winning_si_name || (cluster.bids?.[0]?.si_company_name || ''),
+      })
+      setIsClusterOutcomeModalOpen(true)
+    }
 
     // Selected item states
     const [selectedQuoteForApproval, setSelectedQuoteForApproval] = useState<SalesQuotation | null>(null)
@@ -464,6 +508,36 @@ export function SalesPage() {
         showFeedback('success', 'Tender outcome updated successfully.')
       },
       onError: (err: any) => showFeedback('error', err?.response?.data?.message || 'Failed to update tender outcome'),
+    })
+
+    const createClusterMutation = useMutation({
+      mutationFn: salesApi.createCluster,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['sales-clusters'] })
+        setIsClusterModalOpen(false)
+        showFeedback('success', 'SI RFP cluster & participating bids registered successfully.')
+      },
+      onError: (err: any) => showFeedback('error', err?.response?.data?.message || 'Failed to register cluster'),
+    })
+
+    const updateClusterOutcomeMutation = useMutation({
+      mutationFn: ({ id, data }: { id: number; data: any }) => salesApi.updateClusterOutcome(id, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['sales-clusters'] })
+        setIsClusterOutcomeModalOpen(false)
+        setSelectedClusterForOutcome(null)
+        showFeedback('success', 'Cluster outcome updated successfully.')
+      },
+      onError: (err: any) => showFeedback('error', err?.response?.data?.message || 'Failed to update cluster outcome'),
+    })
+
+    const deleteClusterMutation = useMutation({
+      mutationFn: salesApi.deleteCluster,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['sales-clusters'] })
+        showFeedback('success', 'Cluster removed successfully.')
+      },
+      onError: (err: any) => showFeedback('error', err?.response?.data?.message || 'Failed to delete cluster'),
     })
 
     // Filtered Leads
@@ -1190,6 +1264,31 @@ export function SalesPage() {
         {/* ===================================================================== */}
         {activeTab === 'clustering' && (
           <div className="space-y-4">
+            {/* Header Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 px-4 rounded-lg border border-zinc-200 shadow-2xs">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-sm font-semibold tracking-tight text-zinc-900">
+                    SI Multi-Bid RFP Clustering (MK-05)
+                  </h1>
+                  <span className="text-[10px] font-medium bg-zinc-100 text-zinc-700 px-1.5 py-0.5 rounded border border-zinc-200">
+                    Bid Tracking
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-500 mt-0.5">
+                  Track competing System Integrators quoting AVO UPS on shared PSU tenders &bull; Eliminates false loss penalties (Directive §09.2)
+                </p>
+              </div>
+              <Button
+                onClick={handleOpenClusterModal}
+                size="sm"
+                className="h-7.5 px-3 text-xs bg-zinc-900 hover:bg-black text-white shrink-0 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                Register SI RFP Cluster
+              </Button>
+            </div>
+
             <Card className="border-zinc-200 bg-zinc-50/50 shadow-2xs">
               <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1242,19 +1341,20 @@ export function SalesPage() {
                       <TableHead className="font-semibold text-zinc-600 text-[11px] text-right">Est. Deal Value</TableHead>
                       <TableHead className="font-semibold text-zinc-600 text-[11px]">Participating System Integrators</TableHead>
                       <TableHead className="font-semibold text-zinc-600 text-[11px] text-center">Clustered Outcome</TableHead>
+                      <TableHead className="font-semibold text-zinc-600 text-[11px] text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {clustersLoading ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-zinc-400 text-xs">
+                        <TableCell colSpan={8} className="text-center py-8 text-zinc-400 text-xs">
                           Loading clusters...
                         </TableCell>
                       </TableRow>
                     ) : !clusterData?.clusters?.length ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-zinc-400 text-xs">
-                          No SI RFP clusters registered yet.
+                        <TableCell colSpan={8} className="text-center py-8 text-zinc-400 text-xs">
+                          No SI RFP clusters registered yet. Click &quot;Register SI RFP Cluster&quot; to log competing bids for a tender.
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -1297,6 +1397,31 @@ export function SalesPage() {
                             >
                               {c.cluster_status === 'Deal_Won' ? `WON via ${c.winning_si_name}` : c.cluster_status.replace('_', ' ')}
                             </span>
+                          </TableCell>
+                          <TableCell className="text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleOpenClusterOutcomeModal(c)}
+                                className="h-6 text-[10px] px-2 text-zinc-700 border-zinc-300 hover:bg-zinc-100"
+                              >
+                                Record Outcome
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  if (confirm(`Remove cluster ${c.cluster_code}?`)) {
+                                    deleteClusterMutation.mutate(c.id)
+                                  }
+                                }}
+                                className="h-6 w-6 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+                                title="Delete Cluster"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -2718,6 +2843,267 @@ export function SalesPage() {
                   className="h-8 text-xs bg-zinc-900 text-white hover:bg-zinc-800 font-medium w-full sm:w-auto"
                 >
                   Track in Milestones &rarr;
+                </Button>
+              </DialogFooter>
+            </div>
+          </Dialog>
+        )}
+
+        {/* ===================================================================== */}
+        {/* MODAL 8: REGISTER SI RFP CLUSTER (MK-05 - BID TRACKING ONLY)          */}
+        {/* ===================================================================== */}
+        <Dialog open={isClusterModalOpen} onClose={() => setIsClusterModalOpen(false)} maxWidth="max-w-lg">
+          <div className="space-y-4">
+            <DialogHeader>
+              <DialogTitle className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-zinc-800" />
+                <span>Register SI RFP Cluster (Bid Tracking - MK-05)</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-zinc-500">
+                Group multiple competing System Integrators quoting AVO UPS on the same client RFP (Directive §09.2).
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">End Client / PSU *</label>
+                  <Input
+                    required
+                    placeholder="e.g. State Bank of India, NTPC"
+                    value={newCluster.end_client_name}
+                    onChange={(e) => setNewCluster({ ...newCluster, end_client_name: e.target.value })}
+                    className="h-8 text-xs bg-zinc-50/50"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">RFP Reference Code</label>
+                  <Input
+                    placeholder="e.g. RFP-SBI-2026-UPS"
+                    value={newCluster.cluster_code}
+                    onChange={(e) => setNewCluster({ ...newCluster, cluster_code: e.target.value })}
+                    className="h-8 text-xs font-mono bg-zinc-50/50 uppercase"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Project Scope / RFP Title *</label>
+                <Input
+                  required
+                  placeholder="e.g. Turnkey Supply & Commissioning of 3x 120kVA Online UPS + Lithium Rack"
+                  value={newCluster.project_scope}
+                  onChange={(e) => setNewCluster({ ...newCluster, project_scope: e.target.value })}
+                  className="h-8 text-xs bg-zinc-50/50"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Estimated Total Deal Value (₹)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 4500000"
+                    value={newCluster.est_total_deal_value || ''}
+                    onChange={(e) => setNewCluster({ ...newCluster, est_total_deal_value: Number(e.target.value) })}
+                    className="h-8 text-xs font-mono bg-zinc-50/50"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Initial Cluster Status</label>
+                  <select
+                    value={newCluster.cluster_status}
+                    onChange={(e) => setNewCluster({ ...newCluster, cluster_status: e.target.value as any })}
+                    className="h-8 w-full px-2 text-xs border border-zinc-200 rounded-md bg-zinc-50/50"
+                  >
+                    <option value="Active_Bidding">Active Bidding (Under Evaluation)</option>
+                    <option value="Deal_Won">Deal Won</option>
+                    <option value="Deal_Lost">Deal Lost</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Participating SIs */}
+              <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold text-zinc-800 text-[11px] flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-zinc-600" />
+                    <span>Participating System Integrators (SIs Quoting AVO)</span>
+                  </label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setNewCluster({
+                        ...newCluster,
+                        bids: [
+                          ...newCluster.bids,
+                          { si_company_name: '', quoted_amount: 0, salesperson_name: currentUser?.name || '' },
+                        ],
+                      })
+                    }}
+                    className="h-6 px-2 text-[10px] text-zinc-800 border-zinc-300 hover:bg-zinc-100"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add Another SI
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  {newCluster.bids.map((bid, bIdx) => (
+                    <div key={bIdx} className="flex items-center gap-2 bg-white p-2 rounded border border-zinc-200">
+                      <div className="flex-1">
+                        <Input
+                          placeholder="SI Company (e.g. Wipro Infotech, TCS)"
+                          value={bid.si_company_name}
+                          onChange={(e) => {
+                            const updated = [...newCluster.bids]
+                            updated[bIdx].si_company_name = e.target.value
+                            setNewCluster({ ...newCluster, bids: updated })
+                          }}
+                          className="h-7 text-xs"
+                        />
+                      </div>
+                      <div className="w-36">
+                        <Input
+                          type="number"
+                          placeholder="Quoted ₹"
+                          value={bid.quoted_amount || ''}
+                          onChange={(e) => {
+                            const updated = [...newCluster.bids]
+                            updated[bIdx].quoted_amount = Number(e.target.value)
+                            setNewCluster({ ...newCluster, bids: updated })
+                          }}
+                          className="h-7 text-xs font-mono"
+                        />
+                      </div>
+                      {newCluster.bids.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const updated = newCluster.bids.filter((_, idx) => idx !== bIdx)
+                            setNewCluster({ ...newCluster, bids: updated })
+                          }}
+                          className="h-7 w-7 p-0 text-zinc-400 hover:text-red-600 hover:bg-red-50 shrink-0"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsClusterModalOpen(false)}
+                className="h-8 text-xs border-zinc-200 text-zinc-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={
+                  !newCluster.end_client_name.trim() ||
+                  !newCluster.project_scope.trim() ||
+                  newCluster.bids.every((b) => !b.si_company_name.trim()) ||
+                  createClusterMutation.isPending
+                }
+                onClick={() => createClusterMutation.mutate(newCluster)}
+                className="h-8 text-xs bg-zinc-900 text-white"
+              >
+                {createClusterMutation.isPending ? 'Registering...' : 'Register RFP Cluster'}
+              </Button>
+            </DialogFooter>
+          </div>
+        </Dialog>
+
+        {/* ===================================================================== */}
+        {/* MODAL 9: RECORD CLUSTER OUTCOME (MK-05)                               */}
+        {/* ===================================================================== */}
+        {selectedClusterForOutcome && (
+          <Dialog open={isClusterOutcomeModalOpen} onClose={() => setIsClusterOutcomeModalOpen(false)} maxWidth="max-w-md">
+            <div className="space-y-4">
+              <DialogHeader>
+                <DialogTitle className="text-sm font-bold text-zinc-900">
+                  Record Cluster Bid Outcome
+                </DialogTitle>
+                <DialogDescription className="text-xs text-zinc-500">
+                  Update award decision for {selectedClusterForOutcome.cluster_code} ({selectedClusterForOutcome.end_client_name})
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Cluster Outcome Status</label>
+                  <select
+                    value={clusterOutcomeForm.cluster_status}
+                    onChange={(e) => setClusterOutcomeForm({ ...clusterOutcomeForm, cluster_status: e.target.value as any })}
+                    className="h-8 w-full px-2 text-xs border border-zinc-200 rounded-md bg-zinc-50/50"
+                  >
+                    <option value="Active_Bidding">Active Bidding (Under Evaluation)</option>
+                    <option value="Deal_Won">Deal Won (AVO UPS Captured Deal)</option>
+                    <option value="Deal_Lost">Deal Lost (Competitor Brand Won)</option>
+                  </select>
+                </div>
+
+                {clusterOutcomeForm.cluster_status === 'Deal_Won' && (
+                  <div>
+                    <label className="font-semibold text-zinc-700 block mb-1">Winning System Integrator (SI)</label>
+                    <select
+                      value={clusterOutcomeForm.winning_si_name}
+                      onChange={(e) => setClusterOutcomeForm({ ...clusterOutcomeForm, winning_si_name: e.target.value })}
+                      className="h-8 w-full px-2 text-xs border border-zinc-200 rounded-md bg-zinc-50/50"
+                    >
+                      <option value="">-- Select Which SI Won the Tender --</option>
+                      {selectedClusterForOutcome.bids?.map((b) => (
+                        <option key={b.id} value={b.si_company_name}>
+                          {b.si_company_name} (₹{Number(b.quoted_amount).toLocaleString('en-IN')})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-zinc-500 mt-1">
+                      Awarding one SI automatically marks other competing SIs as non-awarded without penalizing AVO win rates.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsClusterOutcomeModalOpen(false)}
+                  className="h-8 text-xs border-zinc-200 text-zinc-700"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={
+                    (clusterOutcomeForm.cluster_status === 'Deal_Won' && !clusterOutcomeForm.winning_si_name) ||
+                    updateClusterOutcomeMutation.isPending
+                  }
+                  onClick={() => {
+                    updateClusterOutcomeMutation.mutate({
+                      id: selectedClusterForOutcome.id,
+                      data: clusterOutcomeForm,
+                    })
+                  }}
+                  className="h-8 text-xs bg-zinc-900 text-white"
+                >
+                  {updateClusterOutcomeMutation.isPending ? 'Updating...' : 'Save Outcome'}
                 </Button>
               </DialogFooter>
             </div>

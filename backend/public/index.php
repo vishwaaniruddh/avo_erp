@@ -157,6 +157,8 @@ $router->put('/api/sales/tenders/{id}/outcome', [SalesController::class, 'update
 $router->get('/api/sales/tenders/guarantees', [SalesController::class, 'getGuarantees'], $authAndRbac);
 $router->get('/api/sales/rfp-clusters', [SalesController::class, 'getClusters'], $authAndRbac);
 $router->post('/api/sales/rfp-clusters', [SalesController::class, 'createCluster'], $authAndRbac);
+$router->put('/api/sales/rfp-clusters/{id}/outcome', [SalesController::class, 'updateClusterOutcome'], $authAndRbac);
+$router->delete('/api/sales/rfp-clusters/{id}', [SalesController::class, 'deleteCluster'], $authAndRbac);
 $router->get('/api/sales/orders/milestones', [SalesController::class, 'getOrderMilestones'], $authAndRbac);
 $router->get('/api/sales/orders/{id}/audit-package', [SalesController::class, 'getAuditPackage'], $authAndRbac);
 

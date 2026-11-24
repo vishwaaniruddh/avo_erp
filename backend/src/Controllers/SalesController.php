@@ -248,6 +248,29 @@ class SalesController extends BaseController
         }
     }
 
+    public function updateClusterOutcome(Request $request): void
+    {
+        try {
+            $id = (int)$request->param('id');
+            $data = $request->getBody() ?? [];
+            $this->salesService->updateClusterOutcome($id, $data);
+            $this->ok(['id' => $id], 'Cluster outcome updated successfully');
+        } catch (Exception $e) {
+            $this->badRequest($e->getMessage());
+        }
+    }
+
+    public function deleteCluster(Request $request): void
+    {
+        try {
+            $id = (int)$request->param('id');
+            $this->salesService->deleteCluster($id);
+            $this->ok(['id' => $id], 'Cluster deleted successfully');
+        } catch (Exception $e) {
+            $this->badRequest($e->getMessage());
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Order Milestones & Audit Package
     // -------------------------------------------------------------------------
