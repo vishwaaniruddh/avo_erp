@@ -30,7 +30,7 @@ import {
   Eye,
   X,
 } from 'lucide-react'
-import { salesApi, identityApi, productApi } from '@/api/services'
+import { salesApi, identityApi, productApi, customerApi } from '@/api/services'
 import { useAuthStore } from '@/store/authStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -47,6 +47,7 @@ import type {
   TenderGuarantee,
   SiRfpCluster,
   OrderWithMilestones,
+  Customer,
 } from '@/types'
 
 export function SalesPage() {
@@ -166,10 +167,33 @@ export function SalesPage() {
       },
     })
 
+    const { data: rawCustomers = [] } = useQuery({
+      queryKey: ['masters-customers'],
+      queryFn: async () => {
+        const res = await customerApi.getAll({ all: true })
+        return Array.isArray(res) ? res : (res as any)?.data || []
+      },
+    })
+    const customers: Customer[] = useMemo(() => {
+      return Array.isArray(rawCustomers) ? rawCustomers : []
+    }, [rawCustomers])
+
     // =========================================================================
     // MODAL STATES
     // =========================================================================
     const [isLeadModalOpen, setIsLeadModalOpen] = useState(false)
+    const [isQuickAddCustomerOpen, setIsQuickAddCustomerOpen] = useState(false)
+    const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
+    const [quickCustomer, setQuickCustomer] = useState({
+      name: '',
+      company: '',
+      email: '',
+      phone: '',
+      tax_number: '',
+      credit_limit: 500000,
+      address: '',
+    })
+    const [quickCustomerError, setQuickCustomerError] = useState<string | null>(null)
     const [isVisitModalOpen, setIsVisitModalOpen] = useState(false)
     const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false)
     const [isTenderModalOpen, setIsTenderModalOpen] = useState(false)
@@ -312,6 +336,57 @@ export function SalesPage() {
       },
       onError: (err: any) => showFeedback('error', err?.response?.data?.message || 'Failed to create lead'),
     })
+
+    const createQuickCustomerMutation = useMutation({
+      mutationFn: customerApi.create,
+      onSuccess: (newCust: Customer) => {
+        queryClient.invalidateQueries({ queryKey: ['masters-customers'] })
+        queryClient.invalidateQueries({ queryKey: ['customers'] })
+        setIsQuickAddCustomerOpen(false)
+        setQuickCustomer({
+          name: '',
+          company: '',
+          email: '',
+          phone: '',
+          tax_number: '',
+          credit_limit: 500000,
+          address: '',
+        })
+        setQuickCustomerError(null)
+
+        // Automatically select the new customer in the lead form and autofill details!
+        if (newCust && newCust.id) {
+          setSelectedCustomerId(String(newCust.id))
+          setNewLead((prev) => ({
+            ...prev,
+            company_name: newCust.company || newCust.name,
+            contact_person: newCust.name,
+            contact_phone: newCust.phone || prev.contact_phone,
+            contact_email: newCust.email || prev.contact_email,
+          }))
+        }
+        showFeedback('success', `Customer "${newCust.name}" registered in Masters and selected!`)
+      },
+      onError: (err: any) => {
+        setQuickCustomerError(err?.response?.data?.message || err?.message || 'Failed to create customer.')
+      },
+    })
+
+    const handleCustomerSelect = (customerIdStr: string) => {
+      setSelectedCustomerId(customerIdStr)
+      if (!customerIdStr) return
+
+      const cust = customers.find((c) => String(c.id) === customerIdStr)
+      if (cust) {
+        setNewLead((prev) => ({
+          ...prev,
+          company_name: cust.company || cust.name,
+          contact_person: cust.name,
+          contact_phone: cust.phone || prev.contact_phone,
+          contact_email: cust.email || prev.contact_email,
+        }))
+      }
+    }
 
     const createVisitMutation = useMutation({
       mutationFn: salesApi.createVisit,
@@ -1585,6 +1660,45 @@ export function SalesPage() {
             </DialogHeader>
 
             <div className="space-y-3 text-xs">
+              {/* Customer Master Selector & Quick Add */}
+              <div className="p-2.5 rounded-lg bg-zinc-50 border border-zinc-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold text-zinc-800 text-[11px] flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-zinc-600" />
+                    <span>Customer Master (Existing Client)</span>
+                  </label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setQuickCustomerError(null)
+                      setIsQuickAddCustomerOpen(true)
+                    }}
+                    className="h-6 px-2 text-[10px] font-medium text-zinc-800 border-zinc-300 hover:bg-zinc-100 flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3 text-zinc-700" />
+                    <span>+ Add New Customer</span>
+                  </Button>
+                </div>
+
+                <select
+                  value={selectedCustomerId}
+                  onChange={(e) => handleCustomerSelect(e.target.value)}
+                  className="h-8 w-full px-2 text-xs bg-white border border-zinc-200 rounded-md text-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-950"
+                >
+                  <option value="">-- Select Existing Customer (or type manually below) --</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={String(c.id)}>
+                      {c.name} {c.company ? `(${c.company})` : ''} {c.phone ? `— ${c.phone}` : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-zinc-500">
+                  Selecting a customer automatically autofills company name, contact person, phone and email.
+                </p>
+              </div>
+
               <div>
                 <label className="font-semibold text-zinc-700 block mb-1">Company / Organization Name *</label>
                 <Input
@@ -1696,6 +1810,152 @@ export function SalesPage() {
                 className="h-8 text-xs bg-zinc-900 text-white"
               >
                 Save to Database
+              </Button>
+            </DialogFooter>
+          </div>
+        </Dialog>
+
+        {/* ===================================================================== */}
+        {/* MODAL: QUICK ADD CUSTOMER TO MASTERS                                   */}
+        {/* ===================================================================== */}
+        <Dialog
+          open={isQuickAddCustomerOpen}
+          onClose={() => setIsQuickAddCustomerOpen(false)}
+          maxWidth="max-w-md"
+          zIndex="z-[60]"
+        >
+          <div className="space-y-3.5">
+            <DialogHeader>
+              <DialogTitle className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+                <Users className="w-4 h-4 text-zinc-700" />
+                <span>Add Customer to System Masters</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-zinc-500">
+                Immediately registers into Customer Masters and auto-populates the lead without page refresh.
+              </DialogDescription>
+            </DialogHeader>
+
+            {quickCustomerError && (
+              <div className="p-2 rounded text-xs bg-red-50 border border-red-200 text-red-700">
+                {quickCustomerError}
+              </div>
+            )}
+
+            <div className="space-y-2.5 text-xs">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Customer Name *</label>
+                  <Input
+                    required
+                    placeholder="e.g. Ramesh Patel"
+                    value={quickCustomer.name}
+                    onChange={(e) => setQuickCustomer({ ...quickCustomer, name: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Company / Organization</label>
+                  <Input
+                    placeholder="e.g. Larsen & Toubro"
+                    value={quickCustomer.company}
+                    onChange={(e) => setQuickCustomer({ ...quickCustomer, company: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Email Address *</label>
+                  <Input
+                    required
+                    type="email"
+                    placeholder="e.g. ramesh@lt.com"
+                    value={quickCustomer.email}
+                    onChange={(e) => setQuickCustomer({ ...quickCustomer, email: e.target.value })}
+                    className="h-8 text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Phone Number</label>
+                  <Input
+                    placeholder="e.g. 9820012345"
+                    value={quickCustomer.phone}
+                    onChange={(e) => setQuickCustomer({ ...quickCustomer, phone: sanitizePhoneInput(e.target.value) })}
+                    className="h-8 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Tax ID / GSTIN</label>
+                  <Input
+                    placeholder="e.g. 27AABCU9603R1ZM"
+                    value={quickCustomer.tax_number}
+                    onChange={(e) => setQuickCustomer({ ...quickCustomer, tax_number: e.target.value.toUpperCase() })}
+                    className="h-8 text-xs font-mono uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Credit Limit (₹)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    placeholder="500000"
+                    value={quickCustomer.credit_limit || ''}
+                    onChange={(e) => setQuickCustomer({ ...quickCustomer, credit_limit: Number(e.target.value) })}
+                    className="h-8 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Billing / Shipping Address</label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Powai Campus, Gate No. 5, Saki Vihar Road, Mumbai 400072"
+                  value={quickCustomer.address}
+                  onChange={(e) => setQuickCustomer({ ...quickCustomer, address: e.target.value })}
+                  className="w-full text-xs p-2 rounded-md border border-zinc-200 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-950 resize-none"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsQuickAddCustomerOpen(false)}
+                className="h-7.5 text-xs border-zinc-200 text-zinc-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={
+                  !quickCustomer.name.trim() ||
+                  !quickCustomer.email.trim() ||
+                  (quickCustomer.phone ? !isValidPhone(quickCustomer.phone) : false) ||
+                  createQuickCustomerMutation.isPending
+                }
+                onClick={() => {
+                  createQuickCustomerMutation.mutate({
+                    name: quickCustomer.name.trim(),
+                    company: quickCustomer.company.trim() || undefined,
+                    email: quickCustomer.email.trim(),
+                    phone: quickCustomer.phone.trim() || undefined,
+                    tax_number: quickCustomer.tax_number.trim() || undefined,
+                    credit_limit: quickCustomer.credit_limit || 0,
+                    address: quickCustomer.address.trim() || undefined,
+                  })
+                }}
+                className="h-7.5 text-xs bg-zinc-900 text-white"
+              >
+                {createQuickCustomerMutation.isPending ? 'Registering...' : 'Save to Masters & Select'}
               </Button>
             </DialogFooter>
           </div>

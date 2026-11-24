@@ -8,9 +8,10 @@ interface DialogProps {
   onOpenChange?: (open: boolean) => void
   children: React.ReactNode
   maxWidth?: string
+  zIndex?: string
 }
 
-export function Dialog({ open, onClose, onOpenChange, children, maxWidth = 'max-w-2xl' }: DialogProps) {
+export function Dialog({ open, onClose, onOpenChange, children, maxWidth = 'max-w-2xl', zIndex = 'z-50' }: DialogProps) {
   if (!open) return null
 
   const handleClose = () => {
@@ -19,7 +20,7 @@ export function Dialog({ open, onClose, onOpenChange, children, maxWidth = 'max-
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className={cn("fixed inset-0 flex items-center justify-center p-4", zIndex)}>
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/45 backdrop-blur-2xs transition-opacity"
