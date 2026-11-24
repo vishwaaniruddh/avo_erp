@@ -249,7 +249,7 @@ export function UsersPage() {
       </div>
 
       {/* Minimal Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
         <div className="bg-white p-2.5 px-3 rounded-lg border border-zinc-200 flex items-center justify-between shadow-2xs">
           <div>
             <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Total Users</p>
@@ -367,7 +367,7 @@ export function UsersPage() {
       {/* Users Table */}
       <Card className="border-zinc-200 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="min-w-[850px]">
             <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
               <TableRow>
                 <TableHead className="font-semibold text-zinc-600 text-[11px] w-10 text-center">#</TableHead>

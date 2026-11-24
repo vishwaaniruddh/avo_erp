@@ -26,10 +26,16 @@ import {
   Crown,
   LayoutDashboard,
   Headphones,
+  X,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout, canAccessSuperadmin, canAccessSales } = useAuthStore()
@@ -86,7 +92,14 @@ export function Sidebar() {
   ]
 
   return (
-    <aside className="w-60 bg-zinc-950 text-zinc-300 flex flex-col shrink-0 h-screen sticky top-0 border-r border-zinc-800/80 select-none z-30">
+    <aside
+      className={`
+        fixed md:static inset-y-0 left-0 z-50 md:z-30
+        w-64 md:w-60 bg-zinc-950 text-zinc-300 flex flex-col shrink-0 h-screen
+        border-r border-zinc-800/80 select-none transition-transform duration-200 ease-in-out shadow-2xl md:shadow-none
+        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}
+    >
       {/* Brand Header */}
       <div className="h-14 px-4 border-b border-zinc-800/80 flex items-center justify-between shrink-0 bg-zinc-950">
         <div className="flex items-center space-x-2.5 truncate">
@@ -110,6 +123,17 @@ export function Sidebar() {
             </div>
           </div>
         </div>
+
+        {/* Mobile Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-850 md:hidden cursor-pointer"
+          title="Close Navigation Menu"
+          aria-label="Close menu"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Navigation Menu with Sleek Custom Scrollbar */}
@@ -121,6 +145,7 @@ export function Sidebar() {
           </div>
           <Link
             to="/dashboard"
+            onClick={onClose}
             className={`flex items-center px-2.5 py-1.5 rounded-md text-xs transition-all ${
               isDashboardPath
                 ? 'bg-zinc-900 text-white font-medium border border-zinc-800 shadow-2xs'
@@ -182,6 +207,7 @@ export function Sidebar() {
                       <Link
                         key={item.path}
                         to={item.path}
+                        onClick={onClose}
                         className={`flex items-center px-2 py-1.5 rounded-md text-[11px] transition-all ${
                           isActive
                             ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60 shadow-2xs'
@@ -230,6 +256,7 @@ export function Sidebar() {
                       <Link
                         key={item.path}
                         to={item.path}
+                        onClick={onClose}
                         className={`flex items-center px-2 py-1.5 rounded-md text-[11px] transition-all ${
                           isActive
                             ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60 shadow-2xs'
@@ -280,6 +307,7 @@ export function Sidebar() {
                       <Link
                         key={item.path}
                         to={item.path}
+                        onClick={onClose}
                         className={`flex items-center px-2 py-1.5 rounded-md text-[11px] transition-all ${
                           isActive
                             ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60 shadow-2xs'
@@ -349,6 +377,7 @@ export function Sidebar() {
                     <Link
                       key={item.path}
                       to={item.path}
+                      onClick={onClose}
                       className={`flex items-center px-2 py-1.5 rounded-md text-[11px] transition-all ${
                         isActive
                           ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60 shadow-2xs'

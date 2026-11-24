@@ -525,7 +525,7 @@ export function SalesPage() {
         </div>
 
         {/* KPI Overview Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           <Card className="border-zinc-200 shadow-2xs">
             <CardContent className="p-3">
               <div className="flex items-center justify-between text-zinc-500 text-xs">
@@ -603,7 +603,7 @@ export function SalesPage() {
             <Card className="border-zinc-200 shadow-2xs">
               <CardContent className="p-3">
                 <div className="flex flex-col md:flex-row gap-2 justify-between">
-                  <div className="flex flex-1 gap-2">
+                  <div className="flex flex-col sm:flex-row flex-1 gap-2">
                     <div className="relative flex-1">
                       <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-zinc-400" />
                       <Input
@@ -630,7 +630,7 @@ export function SalesPage() {
                     </select>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap sm:flex-nowrap gap-2">
                     <Button
                       onClick={() => setIsVisitModalOpen(true)}
                       variant="outline"
@@ -664,7 +664,7 @@ export function SalesPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[850px]">
                   <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                     <TableRow>
                       <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>
@@ -791,7 +791,7 @@ export function SalesPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[850px]">
                   <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                     <TableRow>
                       <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>
@@ -854,7 +854,7 @@ export function SalesPage() {
         {/* ===================================================================== */}
         {activeTab === 'quotes' && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-xs font-semibold text-zinc-900">Quotation Portfolio & Floor MSP Gate</h2>
                 <p className="text-[11px] text-zinc-500">
@@ -864,7 +864,7 @@ export function SalesPage() {
               <Button
                 onClick={() => navigate('/sales/quotes/new')}
                 size="sm"
-                className="h-8 text-xs bg-zinc-900 text-white hover:bg-zinc-800"
+                className="h-8 text-xs bg-zinc-900 text-white hover:bg-zinc-800 shrink-0 self-start sm:self-auto"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 Build New Quotation
@@ -875,7 +875,7 @@ export function SalesPage() {
             <Card className="border-zinc-200 shadow-2xs">
               <CardContent className="p-3">
                 <div className="flex flex-col md:flex-row gap-2 justify-between items-center">
-                  <div className="flex flex-1 gap-2 w-full md:w-auto">
+                  <div className="flex flex-col sm:flex-row flex-1 gap-2 w-full md:w-auto">
                     <div className="relative flex-1 max-w-sm">
                       <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-zinc-400" />
                       <Input
@@ -928,7 +928,7 @@ export function SalesPage() {
             {/* Quotations Table */}
             <Card className="border-zinc-200 shadow-2xs overflow-hidden">
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[850px]">
                   <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                     <TableRow>
                       <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>
@@ -1157,7 +1157,7 @@ export function SalesPage() {
             {/* Clustered Deals Table */}
             <Card className="border-zinc-200 shadow-2xs overflow-hidden">
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[850px]">
                   <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                     <TableRow>
                       <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>
@@ -1263,7 +1263,7 @@ export function SalesPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[850px]">
                   <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                     <TableRow>
                       <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>
@@ -1394,7 +1394,7 @@ export function SalesPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[850px]">
                   <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                     <TableRow>
                       <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>
@@ -1479,7 +1479,7 @@ export function SalesPage() {
 
             <Card className="border-zinc-200 shadow-2xs overflow-hidden">
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[850px]">
                   <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                     <TableRow>
                       <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>
@@ -1966,10 +1966,10 @@ export function SalesPage() {
               className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
             />
 
-            <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-              <div className="w-screen w-full md:w-[50vw] max-w-none bg-white shadow-2xl border-l border-zinc-200 flex flex-col h-full transform transition-transform duration-300 ease-in-out animate-in slide-in-from-right">
+            <div className="fixed inset-y-0 right-0 max-w-full flex">
+              <div className="w-screen w-full md:w-[60vw] lg:w-[50vw] max-w-none bg-white shadow-2xl border-l border-zinc-200 flex flex-col h-full transform transition-transform duration-300 ease-in-out animate-in slide-in-from-right">
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-zinc-200 bg-zinc-50/90 flex items-center justify-between">
+                <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-zinc-200 bg-zinc-50/90 flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-900 text-white">
@@ -1996,7 +1996,7 @@ export function SalesPage() {
                 </div>
 
                 {/* Scrollable Form Body */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
                   {/* Card 1: Tender Identification */}
                   <div className="border border-zinc-200 rounded-lg p-4 bg-white shadow-2xs space-y-4">
                     <div className="flex items-center gap-2 pb-2 border-b border-zinc-100">

@@ -317,7 +317,7 @@ export function EmailSettingsPage() {
       {/* Settings Table */}
       <Card className="border-zinc-200 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="min-w-[750px]">
             <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
               <TableRow>
                 <TableHead className="font-semibold text-zinc-600 text-[11px] w-10 text-center">#</TableHead>

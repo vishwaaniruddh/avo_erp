@@ -124,8 +124,8 @@ export function ViewQuotationPage() {
             <span>/</span>
             <span className="text-zinc-800 font-mono font-medium">{quote.quote_number}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold tracking-tight text-zinc-900 font-mono">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900 font-mono">
               {quote.quote_number}
             </h1>
             <span
@@ -154,7 +154,7 @@ export function ViewQuotationPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="outline"
@@ -292,7 +292,7 @@ export function ViewQuotationPage() {
           </div>
 
           <div className="overflow-x-auto border border-zinc-200 rounded-lg">
-            <Table>
+            <Table className="min-w-[800px]">
               <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                 <TableRow>
                   <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>

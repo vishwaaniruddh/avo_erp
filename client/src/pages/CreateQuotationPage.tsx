@@ -511,8 +511,8 @@ export function CreateQuotationPage() {
               {isEditMode ? `Edit ${editQuoteData?.quote_number || 'Quotation'}` : 'New Quotation'}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold tracking-tight text-zinc-900">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-zinc-900">
               {isEditMode
                 ? `Edit Quotation ${editQuoteData?.quote_number || ''}`
                 : 'Build Commercial Quotation & CPQ Engine'}
@@ -588,7 +588,7 @@ export function CreateQuotationPage() {
         </div>
 
         <CardContent className="p-4 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {/* Customer / Company */}
             <div>
               <Label className="text-xs font-semibold text-zinc-700 block mb-1">
@@ -639,7 +639,7 @@ export function CreateQuotationPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 pt-2 border-t border-zinc-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-zinc-100">
             <div>
               <Label className="text-xs font-semibold text-zinc-700 block mb-1">
                 Quotation Date *
@@ -735,7 +735,7 @@ export function CreateQuotationPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="min-w-[850px]">
             <TableHeader className="bg-zinc-100/70 border-b border-zinc-200">
               <TableRow>
                 <TableHead className="w-8 text-center font-semibold text-zinc-600 text-[11px]">#</TableHead>
@@ -1259,8 +1259,8 @@ export function CreateQuotationPage() {
       </Card>
 
       {/* Sticky Bottom Summary & Action Bar */}
-      <div className="sticky bottom-0 z-20 bg-white/95 backdrop-blur border-t border-zinc-200 p-3 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-4 text-xs font-mono">
+      <div className="sticky bottom-0 z-20 bg-white/95 backdrop-blur border-t border-zinc-200 p-3 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-mono">
           <div>
             <span className="text-zinc-500 block text-[10px]">ITEMS</span>
             <span className="font-bold text-zinc-900">{items.length} Lines</span>
@@ -1289,7 +1289,7 @@ export function CreateQuotationPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-end w-full md:w-auto">
           <Button
             type="button"
             variant="outline"

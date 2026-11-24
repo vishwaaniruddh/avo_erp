@@ -323,7 +323,7 @@ export function PermissionsPage() {
 
               {/* Focused 9 Modules Table */}
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[600px]">
                   <TableHeader className="bg-zinc-50/80 border-b border-zinc-200">
                     <TableRow>
                       <TableHead className="w-10 text-center font-semibold text-zinc-600 text-[11px]">
@@ -488,7 +488,7 @@ export function PermissionsPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="min-w-[1000px]">
               <TableHeader className="bg-zinc-50 border-b border-zinc-200">
                 <TableRow>
                   <TableHead className="w-10 text-center font-semibold text-zinc-700 text-[11px] sticky left-0 bg-zinc-50 z-20">
