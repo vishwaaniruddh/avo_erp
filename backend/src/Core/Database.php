@@ -10,29 +10,80 @@ class Database
     private static ?PDO $instance = null;
     private static ?string $driver = null;
 
+    /**
+     * Determines whether the current environment is production.
+     * Checks APP_ENV, HTTP_HOST (e.g. avo.sarsspl.com), and server user paths.
+     */
+    public static function isProduction(): bool
+    {
+        // 1. Explicit env variable (from .env or server environment)
+        $appEnv = getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? null);
+        if ($appEnv !== null) {
+            $appEnv = strtolower(trim((string)$appEnv));
+            if ($appEnv === 'production' || $appEnv === 'prod') {
+                return true;
+            }
+            if ($appEnv === 'local' || $appEnv === 'development' || $appEnv === 'dev') {
+                return false;
+            }
+        }
+
+        // 2. HTTP Host / Domain detection
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+        if (!empty($host)) {
+            $host = strtolower(explode(':', (string)$host)[0]);
+            if ($host === 'avo.sarsspl.com' || str_ends_with($host, 'sarsspl.com')) {
+                return true;
+            }
+            if ($host === 'localhost' || $host === '127.0.0.1' || $host === '::1') {
+                return false;
+            }
+        }
+
+        // 3. Document Root / File Path detection (Hostinger cPanel path contains u444388293)
+        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+        $dir = __DIR__;
+        if (str_contains((string)$docRoot, 'u444388293') || str_contains((string)$dir, 'u444388293')) {
+            return true;
+        }
+
+        // 4. On Windows local development machine, it is local
+        if (PHP_OS_FAMILY === 'Windows') {
+            return false;
+        }
+
+        return false;
+    }
+
     public static function getConnection(): PDO
     {
         if (self::$instance === null) {
             self::loadEnv();
 
+            $isProd = self::isProduction();
+
+            // Dynamic defaults: local XAMPP vs production Hostinger (avo.sarsspl.com)
+            $defaultHost = '127.0.0.1';
+            $defaultPort = '3306';
+            $defaultDb   = $isProd ? 'u444388293_avo_erp' : 'avo_erp';
+            $defaultUser = $isProd ? 'u444388293_avo_erp' : 'root';
+            $defaultPass = $isProd ? 'AVav@@2026' : '';
+
             $driver = getenv('DB_CONNECTION') ?: 'mysql';
 
             if ($driver === 'mysql') {
-                $host = getenv('DB_HOST') ?: '127.0.0.1';
-                $port = getenv('DB_PORT') ?: '3306';
-                $dbName = getenv('DB_DATABASE') ?: 'avo_erp';
-                $user = getenv('DB_USERNAME') ?: 'root';
-                $pass = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : '';
+                $host   = getenv('DB_HOST') ?: $defaultHost;
+                $port   = getenv('DB_PORT') ?: $defaultPort;
+                $dbName = getenv('DB_DATABASE') ?: (getenv('DB_NAME') ?: $defaultDb);
+                $user   = getenv('DB_USERNAME') ?: (getenv('DB_USER') ?: $defaultUser);
+                $pass   = getenv('DB_PASSWORD') !== false 
+                    ? getenv('DB_PASSWORD') 
+                    : (getenv('DB_PASS') !== false ? getenv('DB_PASS') : $defaultPass);
+
+                $dsn = "mysql:host={$host};port={$port};dbname={$dbName};charset=utf8mb4";
 
                 try {
-                    // 1. Ensure the MySQL database exists
-                    $adminPdo = new PDO("mysql:host={$host};port={$port}", $user, $pass, [
-                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    ]);
-                    $adminPdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
-
-                    // 2. Connect to the specific database
-                    $dsn = "mysql:host={$host};port={$port};dbname={$dbName};charset=utf8mb4";
+                    // Direct connection to the specific database
                     self::$instance = new PDO($dsn, $user, $pass, [
                         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -40,9 +91,32 @@ class Database
                     ]);
                     self::$driver = 'mysql';
                 } catch (PDOException $e) {
-                    // Fallback to SQLite if MySQL service is unavailable
-                    self::$instance = self::createSqliteConnection();
-                    self::$driver = 'sqlite';
+                    // If local and database doesn't exist yet, attempt auto-creation
+                    if (!$isProd && ($e->getCode() == 1049 || str_contains($e->getMessage(), 'Unknown database'))) {
+                        try {
+                            $adminPdo = new PDO("mysql:host={$host};port={$port}", $user, $pass, [
+                                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                            ]);
+                            $adminPdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+
+                            self::$instance = new PDO($dsn, $user, $pass, [
+                                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                                PDO::ATTR_EMULATE_PREPARES => false,
+                            ]);
+                            self::$driver = 'mysql';
+                        } catch (PDOException $e2) {
+                            self::$instance = self::createSqliteConnection();
+                            self::$driver = 'sqlite';
+                        }
+                    } elseif (!$isProd) {
+                        // Fallback to SQLite only in local dev if local MySQL is down
+                        self::$instance = self::createSqliteConnection();
+                        self::$driver = 'sqlite';
+                    } else {
+                        // On production, throw exception with clear details
+                        throw new PDOException("Production Database connection failed [{$host} / {$dbName}]: " . $e->getMessage(), (int)$e->getCode());
+                    }
                 }
             } else {
                 self::$instance = self::createSqliteConnection();
@@ -50,6 +124,16 @@ class Database
             }
 
             self::initializeSchema(self::$instance, self::$driver);
+
+            // Auto-seed default archetype users if users table is empty
+            try {
+                $userCount = (int) self::$instance->query("SELECT COUNT(*) FROM users")->fetchColumn();
+                if ($userCount === 0) {
+                    \App\Database\DatabaseSeeder::run();
+                }
+            } catch (\Throwable $t) {
+                // Table might still be initializing
+            }
         }
 
         return self::$instance;
