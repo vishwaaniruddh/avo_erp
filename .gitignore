@@ -26,6 +26,7 @@ backend/storage/logs/
 scratch/
 tmp/
 temp/
+graphify-out/
 
 # Large binary mobile packages
 *.apk
