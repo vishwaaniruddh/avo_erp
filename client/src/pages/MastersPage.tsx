@@ -7,6 +7,7 @@ import {
   Compass,
   Truck,
   Building,
+  Contact,
   Plus,
   Search,
   Edit2,
@@ -15,7 +16,7 @@ import {
   AlertCircle,
   ExternalLink,
 } from 'lucide-react'
-import { mastersApi } from '@/api/services'
+import { mastersApi, customerApi } from '@/api/services'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,11 +24,12 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { sanitizePhoneInput, isValidPhone, getPhoneError } from '@/lib/validation'
-import type { CityMaster, CountryMaster, CourierMaster, StateMaster, ZoneMaster } from '@/types'
+import type { CityMaster, CountryMaster, CourierMaster, StateMaster, ZoneMaster, Customer } from '@/types'
 
-type MasterTab = 'cities' | 'states' | 'countries' | 'zones' | 'couriers'
+type MasterTab = 'customers' | 'cities' | 'states' | 'countries' | 'zones' | 'couriers'
 
 const TABS: { id: MasterTab; label: string; icon: any; desc: string }[] = [
+  { id: 'customers', label: 'Customer', icon: Contact, desc: 'Enterprise client directory, GSTIN/Tax compliance & credit lines' },
   { id: 'cities', label: 'City', icon: Building, desc: 'City directories, linked states & postal PIN codes' },
   { id: 'states', label: 'State', icon: MapPin, desc: 'States and territories linked to national jurisdictions' },
   { id: 'countries', label: 'Country', icon: Globe, desc: 'Global country registry, ISO codes & international dial codes' },
@@ -42,9 +44,9 @@ export function MastersPage() {
 
   // Active Tab
   const activeTab: MasterTab =
-    entity && ['cities', 'states', 'countries', 'zones', 'couriers'].includes(entity)
+    entity && ['customers', 'cities', 'states', 'countries', 'zones', 'couriers'].includes(entity)
       ? (entity as MasterTab)
-      : 'cities'
+      : 'customers'
 
   const handleSelectTab = (tab: MasterTab) => {
     navigate(`/masters/${tab}`)
@@ -60,6 +62,14 @@ export function MastersPage() {
   const [editingItem, setEditingItem] = useState<any | null>(null)
 
   // Form Fields
+  const [customerName, setCustomerName] = useState('')
+  const [customerCompany, setCustomerCompany] = useState('')
+  const [customerEmail, setCustomerEmail] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [customerTaxNumber, setCustomerTaxNumber] = useState('')
+  const [customerCreditLimit, setCustomerCreditLimit] = useState('500000')
+  const [customerAddress, setCustomerAddress] = useState('')
+
   const [countryName, setCountryName] = useState('')
   const [countryCode, setCountryCode] = useState('')
   const [countryPhoneCode, setCountryPhoneCode] = useState('')
@@ -84,6 +94,17 @@ export function MastersPage() {
   const [isActive, setIsActive] = useState(true)
 
   // Queries
+  const { data: rawCustomers, isLoading: loadingCustomers } = useQuery({
+    queryKey: ['masters-customers'],
+    queryFn: () => customerApi.getAll({ all: true }),
+  })
+
+  const customers: Customer[] = useMemo(() => {
+    if (!rawCustomers) return []
+    if (Array.isArray(rawCustomers)) return rawCustomers
+    return (rawCustomers as any).data || []
+  }, [rawCustomers])
+
   const { data: countries = [], isLoading: loadingCountries } = useQuery({
     queryKey: ['masters-countries'],
     queryFn: () => mastersApi.getCountries(),
@@ -113,6 +134,8 @@ export function MastersPage() {
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
       switch (activeTab) {
+        case 'customers':
+          return customerApi.create(data)
         case 'countries':
           return mastersApi.createCountry(data)
         case 'states':
@@ -128,7 +151,10 @@ export function MastersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`masters-${activeTab}`] })
       setIsFormOpen(false)
-      setFeedback({ type: 'success', message: `${activeTab.slice(0, -1)} created successfully.` })
+      setFeedback({
+        type: 'success',
+        message: `${activeTab === 'customers' ? 'Customer' : activeTab.slice(0, -1)} created successfully.`,
+      })
     },
     onError: (err: any) => {
       setFeedback({ type: 'error', message: err.response?.data?.message || err.message || 'Operation failed.' })
@@ -138,6 +164,8 @@ export function MastersPage() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
       switch (activeTab) {
+        case 'customers':
+          return customerApi.update(id, data)
         case 'countries':
           return mastersApi.updateCountry(id, data)
         case 'states':
@@ -153,7 +181,10 @@ export function MastersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`masters-${activeTab}`] })
       setIsFormOpen(false)
-      setFeedback({ type: 'success', message: `${activeTab.slice(0, -1)} updated successfully.` })
+      setFeedback({
+        type: 'success',
+        message: `${activeTab === 'customers' ? 'Customer' : activeTab.slice(0, -1)} updated successfully.`,
+      })
     },
     onError: (err: any) => {
       setFeedback({ type: 'error', message: err.response?.data?.message || err.message || 'Operation failed.' })
@@ -163,6 +194,8 @@ export function MastersPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       switch (activeTab) {
+        case 'customers':
+          return customerApi.delete(id)
         case 'countries':
           return mastersApi.deleteCountry(id)
         case 'states':
@@ -191,7 +224,15 @@ export function MastersPage() {
     setEditingItem(null)
     setIsActive(true)
 
-    if (activeTab === 'countries') {
+    if (activeTab === 'customers') {
+      setCustomerName('')
+      setCustomerCompany('')
+      setCustomerEmail('')
+      setCustomerPhone('')
+      setCustomerTaxNumber('')
+      setCustomerCreditLimit('500000')
+      setCustomerAddress('')
+    } else if (activeTab === 'countries') {
       setCountryName('')
       setCountryCode('')
       setCountryPhoneCode('+91')
@@ -220,7 +261,15 @@ export function MastersPage() {
     setEditingItem(item)
     setIsActive(Boolean(item.is_active))
 
-    if (activeTab === 'countries') {
+    if (activeTab === 'customers') {
+      setCustomerName(item.name || '')
+      setCustomerCompany(item.company || '')
+      setCustomerEmail(item.email || '')
+      setCustomerPhone(item.phone || '')
+      setCustomerTaxNumber(item.tax_number || '')
+      setCustomerCreditLimit(String(item.credit_limit ?? 0))
+      setCustomerAddress(item.address || '')
+    } else if (activeTab === 'countries') {
       setCountryName(item.name)
       setCountryCode(item.code)
       setCountryPhoneCode(item.phone_code || '')
@@ -249,7 +298,25 @@ export function MastersPage() {
     e.preventDefault()
     let payload: any = { is_active: isActive ? 1 : 0 }
 
-    if (activeTab === 'countries') {
+    if (activeTab === 'customers') {
+      if (!customerName.trim() || !customerEmail.trim()) {
+        setFeedback({ type: 'error', message: 'Customer Name and Email are required.' })
+        return
+      }
+      if (customerPhone.trim() && !isValidPhone(customerPhone)) {
+        setFeedback({ type: 'error', message: 'Please enter a valid 10-15 digit phone number.' })
+        return
+      }
+      payload = {
+        name: customerName.trim(),
+        company: customerCompany.trim() || null,
+        email: customerEmail.trim(),
+        phone: customerPhone.trim() || null,
+        tax_number: customerTaxNumber.trim().toUpperCase() || null,
+        credit_limit: parseFloat(customerCreditLimit) || 0,
+        address: customerAddress.trim() || null,
+      }
+    } else if (activeTab === 'countries') {
       payload = {
         ...payload,
         name: countryName.trim(),
@@ -302,6 +369,15 @@ export function MastersPage() {
   const currentItems = useMemo(() => {
     const q = search.toLowerCase()
     switch (activeTab) {
+      case 'customers':
+        return customers.filter(
+          (c) =>
+            c.name.toLowerCase().includes(q) ||
+            (c.company && c.company.toLowerCase().includes(q)) ||
+            (c.email && c.email.toLowerCase().includes(q)) ||
+            (c.phone && c.phone.includes(q)) ||
+            (c.tax_number && c.tax_number.toLowerCase().includes(q))
+        )
       case 'cities':
         return cities.filter(
           (c) =>
@@ -337,10 +413,12 @@ export function MastersPage() {
             (cr.contact_number && cr.contact_number.includes(q))
         )
     }
-  }, [activeTab, search, cities, states, countries, zones, couriers])
+  }, [activeTab, search, customers, cities, states, countries, zones, couriers])
 
   const isLoading =
-    activeTab === 'cities'
+    activeTab === 'customers'
+      ? loadingCustomers
+      : activeTab === 'cities'
       ? loadingCities
       : activeTab === 'states'
       ? loadingStates
@@ -399,6 +477,7 @@ export function MastersPage() {
           const Icon = tab.icon
           const isActiveTab = activeTab === tab.id
           let count = 0
+          if (tab.id === 'customers') count = customers.length
           if (tab.id === 'cities') count = cities.length
           if (tab.id === 'states') count = states.length
           if (tab.id === 'countries') count = countries.length
@@ -453,6 +532,17 @@ export function MastersPage() {
               <TableRow>
                 <TableHead className="font-semibold text-zinc-600 text-[11px] w-10 text-center">#</TableHead>
 
+                {activeTab === 'customers' && (
+                  <>
+                    <TableHead className="font-semibold text-zinc-600 text-[11px]">Customer & Company</TableHead>
+                    <TableHead className="font-semibold text-zinc-600 text-[11px]">Contact (Email & Phone)</TableHead>
+                    <TableHead className="font-semibold text-zinc-600 text-[11px]">Tax ID / GSTIN</TableHead>
+                    <TableHead className="font-semibold text-zinc-600 text-[11px] text-right">Credit Limit (₹)</TableHead>
+                    <TableHead className="font-semibold text-zinc-600 text-[11px] text-right">Outstanding (₹)</TableHead>
+                    <TableHead className="font-semibold text-zinc-600 text-[11px]">Billing Address</TableHead>
+                  </>
+                )}
+
                 {activeTab === 'cities' && (
                   <>
                     <TableHead className="font-semibold text-zinc-600 text-[11px]">City Name</TableHead>
@@ -502,13 +592,13 @@ export function MastersPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-xs text-zinc-500">
+                  <TableCell colSpan={10} className="text-center py-8 text-xs text-zinc-500">
                     Loading {activeTabMeta.label.toLowerCase()} records...
                   </TableCell>
                 </TableRow>
               ) : currentItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-xs text-zinc-500">
+                  <TableCell colSpan={10} className="text-center py-8 text-xs text-zinc-500">
                     No {activeTabMeta.label.toLowerCase()} records found. Click "+ Add {activeTabMeta.label}" to register new data.
                   </TableCell>
                 </TableRow>
@@ -518,6 +608,45 @@ export function MastersPage() {
                     <TableCell className="text-center font-mono text-[11px] text-zinc-400 whitespace-nowrap">
                       {idx + 1}
                     </TableCell>
+
+                    {/* Customers */}
+                    {activeTab === 'customers' && (
+                      <>
+                        <TableCell className="whitespace-nowrap">
+                          <div className="font-medium text-xs text-zinc-900">{item.name}</div>
+                          {item.company && (
+                            <div className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5">
+                              <Building className="w-3 h-3 text-zinc-400" />
+                              {item.company}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <div className="text-xs text-zinc-800 font-mono">{item.email}</div>
+                          {item.phone && (
+                            <div className="text-[11px] text-zinc-500 font-mono mt-0.5">
+                              {item.phone}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap font-mono text-[11px] text-zinc-700">
+                          {item.tax_number || '—'}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap font-mono text-xs text-right font-medium text-zinc-900">
+                          ₹{Number(item.credit_limit || 0).toLocaleString('en-IN')}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap font-mono text-xs text-right">
+                          {Number(item.outstanding_balance || 0) > 0 ? (
+                            <span className="text-amber-600 font-medium">₹{Number(item.outstanding_balance).toLocaleString('en-IN')}</span>
+                          ) : (
+                            <span className="text-emerald-600 font-medium">₹0</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-xs text-zinc-500 max-w-xs truncate">
+                          {item.address || '—'}
+                        </TableCell>
+                      </>
+                    )}
 
                     {/* Cities */}
                     {activeTab === 'cities' && (
@@ -601,7 +730,11 @@ export function MastersPage() {
                     )}
 
                     <TableCell className="text-center whitespace-nowrap">
-                      {item.is_active ? (
+                      {activeTab === 'customers' ? (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Active
+                        </span>
+                      ) : item.is_active ? (
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-zinc-900 text-white">
                           Active
                         </span>
@@ -657,6 +790,88 @@ export function MastersPage() {
         </DialogHeader>
 
         <form onSubmit={handleSubmitForm} className="space-y-3 mt-4">
+            {/* Customer Fields */}
+            {activeTab === 'customers' && (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-[11px] font-medium text-zinc-700">Customer Name *</Label>
+                    <Input
+                      required
+                      placeholder="e.g. John Doe / Rajesh Kumar"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="h-8 text-xs mt-1 bg-zinc-50/50"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] font-medium text-zinc-700">Company / Organization</Label>
+                    <Input
+                      placeholder="e.g. Tata Power Ltd."
+                      value={customerCompany}
+                      onChange={(e) => setCustomerCompany(e.target.value)}
+                      className="h-8 text-xs mt-1 bg-zinc-50/50"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-[11px] font-medium text-zinc-700">Email Address *</Label>
+                    <Input
+                      required
+                      type="email"
+                      placeholder="e.g. rajesh@tatapower.com"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      className="h-8 text-xs mt-1 bg-zinc-50/50"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] font-medium text-zinc-700">Phone / Mobile</Label>
+                    <Input
+                      placeholder="e.g. 9876543210"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(sanitizePhoneInput(e.target.value))}
+                      className="h-8 text-xs mt-1 font-mono bg-zinc-50/50"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-[11px] font-medium text-zinc-700">Tax ID / GSTIN</Label>
+                    <Input
+                      placeholder="e.g. 27AABCU9603R1ZM"
+                      value={customerTaxNumber}
+                      onChange={(e) => setCustomerTaxNumber(e.target.value.toUpperCase())}
+                      className="h-8 text-xs mt-1 font-mono uppercase bg-zinc-50/50"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] font-medium text-zinc-700">Credit Limit (₹)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1000"
+                      placeholder="500000"
+                      value={customerCreditLimit}
+                      onChange={(e) => setCustomerCreditLimit(e.target.value)}
+                      className="h-8 text-xs mt-1 font-mono bg-zinc-50/50"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[11px] font-medium text-zinc-700">Billing / Shipping Address</Label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Plot No. 42, MIDC Industrial Area, Andheri East, Mumbai 400093"
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    className="w-full text-xs p-2 rounded-md border border-zinc-200 bg-zinc-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-950 mt-1 resize-none"
+                  />
+                </div>
+              </>
+            )}
+
             {/* Country Fields */}
             {activeTab === 'countries' && (
               <>
@@ -865,18 +1080,20 @@ export function MastersPage() {
             )}
 
             {/* Active Toggle */}
-            <div className="flex items-center gap-2 pt-2 border-t border-zinc-100">
-              <input
-                type="checkbox"
-                id="isActiveMasterToggle"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
-              />
-              <label htmlFor="isActiveMasterToggle" className="text-xs text-zinc-700 select-none">
-                Active in operations
-              </label>
-            </div>
+            {activeTab !== 'customers' && (
+              <div className="flex items-center gap-2 pt-2 border-t border-zinc-100">
+                <input
+                  type="checkbox"
+                  id="isActiveMasterToggle"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                />
+                <label htmlFor="isActiveMasterToggle" className="text-xs text-zinc-700 select-none">
+                  Active in operations
+                </label>
+              </div>
+            )}
 
             <DialogFooter className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-end gap-2">
               <Button

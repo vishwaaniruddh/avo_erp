@@ -50,5 +50,36 @@ class CustomerController extends BaseController
             $this->serverError('Could not create customer', $e->getMessage());
         }
     }
+
+    public function update(Request $request): void
+    {
+        $id = (int) $request->param('id');
+        $user = $request->getUser();
+        $input = $request->input();
+
+        try {
+            $customer = CustomerService::update($id, $input, $user);
+            $this->ok($customer, 'Customer updated successfully');
+        } catch (InvalidArgumentException $e) {
+            $this->unprocessable($e->getMessage());
+        } catch (\Exception $e) {
+            $this->serverError('Could not update customer', $e->getMessage());
+        }
+    }
+
+    public function destroy(Request $request): void
+    {
+        $id = (int) $request->param('id');
+        $user = $request->getUser();
+
+        try {
+            CustomerService::delete($id, $user);
+            $this->ok(null, 'Customer deleted successfully');
+        } catch (InvalidArgumentException $e) {
+            $this->notFound($e->getMessage());
+        } catch (\Exception $e) {
+            $this->serverError('Could not delete customer', $e->getMessage());
+        }
+    }
 }
 

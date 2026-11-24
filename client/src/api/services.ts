@@ -215,6 +215,14 @@ export const customerApi = {
     const res = (await api.post('/customers', data)) as unknown as ApiResponse<Customer>
     return res.data!
   },
+  update: async (id: number, data: Partial<Customer>) => {
+    const res = (await api.put(`/customers/${id}`, data)) as unknown as ApiResponse<Customer>
+    return res.data!
+  },
+  delete: async (id: number) => {
+    const res = (await api.delete(`/customers/${id}`)) as unknown as ApiResponse<null>
+    return res.data
+  },
 }
 
 export const orderApi = {

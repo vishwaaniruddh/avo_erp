@@ -120,7 +120,7 @@ export default function App() {
             />
 
             {/* Superadmin - Masters */}
-            <Route path="masters" element={<Navigate to="/masters/cities" replace />} />
+            <Route path="masters" element={<Navigate to="/masters/customers" replace />} />
             <Route
               path="masters/:entity"
               element={

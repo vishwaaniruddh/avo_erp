@@ -90,10 +90,13 @@ class CasbinEnforcer
         }
 
         // =========================================================================
-        // SPECIAL SECURITY GATE: Superadmin Masters & Email Settings
+        // SPECIAL SECURITY GATE: Superadmin Masters, Customers & Email Settings
         // =========================================================================
-        if (preg_match('#^/api/email#', $path) || preg_match('#^/api/masters#', $path)) {
+        if (preg_match('#^/api/email#', $path) || preg_match('#^/api/masters#', $path) || preg_match('#^/api/customers#', $path)) {
             if ($method === 'GET') {
+                return true;
+            }
+            if (preg_match('#^/api/customers#', $path) && in_array($roleType, ['Sales'])) {
                 return true;
             }
             return $role === 'admin' || in_array($roleType, ['Admin', 'Executive']) || in_array($level, ['L2', 'L3']);

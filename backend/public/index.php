@@ -183,6 +183,8 @@ $router->delete('/api/products/{id}', [ProductController::class, 'destroy'], $au
 $router->get('/api/customers', [CustomerController::class, 'index'], $authAndRbac);
 $router->get('/api/customers/{id}', [CustomerController::class, 'show'], $authAndRbac);
 $router->post('/api/customers', [CustomerController::class, 'store'], $authAndRbac);
+$router->put('/api/customers/{id}', [CustomerController::class, 'update'], $authAndRbac);
+$router->delete('/api/customers/{id}', [CustomerController::class, 'destroy'], $authAndRbac);
 
 // Orders
 $router->get('/api/orders', [OrderController::class, 'index'], $authAndRbac);

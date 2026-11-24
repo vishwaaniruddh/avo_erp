@@ -15,6 +15,7 @@ import {
   Globe,
   Compass,
   Truck,
+  Contact,
   Briefcase,
   TrendingUp,
   ChevronDown,
@@ -76,6 +77,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   ]
 
   const mastersSubItems = [
+    { name: 'Customer', path: '/masters/customers', icon: Contact },
     { name: 'City', path: '/masters/cities', icon: Building },
     { name: 'State', path: '/masters/states', icon: MapPin },
     { name: 'Country', path: '/masters/countries', icon: Globe },
