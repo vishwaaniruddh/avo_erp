@@ -1,6 +1,24 @@
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
+// 1. Fallback PSR-4 Autoloader for App\ namespace (guarantees core classes load even without Composer)
+spl_autoload_register(function ($class) {
+    $prefix = 'App\\';
+    $baseDir = __DIR__ . '/../src/';
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+    $relativeClass = substr($class, $len);
+    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
+
+// 2. Load Composer autoloader if present
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}
 
 use App\Controllers\AuditLogController;
 use App\Controllers\AuthController;
@@ -22,13 +40,38 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
 
-// Handle global exceptions and errors with standard 500 status code
+// 3. Catch all uncaught exceptions with JSON 500 response
 set_exception_handler(function (\Throwable $e) {
-    Response::serverError('An unhandled server exception occurred', [
-        'error' => $e->getMessage(),
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+        header('Access-Control-Allow-Origin: *');
+        http_response_code(500);
+    }
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage(),
         'file' => basename($e->getFile()),
         'line' => $e->getLine(),
-    ]);
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+});
+
+// 4. Catch fatal PHP errors with JSON response
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=utf-8');
+            header('Access-Control-Allow-Origin: *');
+            http_response_code(500);
+        }
+        echo json_encode([
+            'success' => false,
+            'message' => 'Fatal Error: ' . $error['message'],
+            'file' => basename($error['file']),
+            'line' => $error['line'],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
 });
 
 $request = new Request();
