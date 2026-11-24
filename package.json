@@ -1,0 +1,11 @@
+{
+  "name": "avo-erp",
+  "version": "2.0.0",
+  "private": true,
+  "description": "AVO ERP Enterprise Core System",
+  "scripts": {
+    "build": "node scripts/build-to-root.js",
+    "build:client": "npm --prefix client run build",
+    "dev": "npm --prefix client run dev"
+  }
+}

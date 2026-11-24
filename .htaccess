@@ -5,6 +5,17 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Route /api calls directly to backend/public/index.php
+    # 1. Route /api calls directly to backend/public/index.php
     RewriteRule ^api(/.*)?$ backend/public/index.php [QSA,L]
+
+    # 2. Serve existing files and directories directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 3. Route deep-linked asset requests to the assets folder
+    RewriteRule ^.+/(assets/.*)$ $1 [L]
+
+    # 4. SPA Fallback: Route all non-file/non-directory requests to index.html
+    RewriteRule ^ index.html [L]
 </IfModule>

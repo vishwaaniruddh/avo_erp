@@ -30,6 +30,9 @@ temp/
 # Large binary mobile packages
 *.apk
 
+# Legacy reference project
+avo_old_project/
+
 # OS & Editor files
 .DS_Store
 Thumbs.db
